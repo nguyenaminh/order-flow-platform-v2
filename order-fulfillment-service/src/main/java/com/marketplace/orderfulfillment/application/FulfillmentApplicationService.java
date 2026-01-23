@@ -2,9 +2,11 @@ package com.marketplace.orderfulfillment.application;
 
 import com.marketplace.orderfulfillment.domain.model.FulfillmentOrder;
 import com.marketplace.orderfulfillment.domain.repository.FulfillmentOrderRepository;
+import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+@Service
 public class FulfillmentApplicationService {
     private final FulfillmentOrderRepository repository;
 

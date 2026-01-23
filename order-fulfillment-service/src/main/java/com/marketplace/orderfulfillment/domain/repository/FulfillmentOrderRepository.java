@@ -7,7 +7,4 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface FulfillmentOrderRepository extends JpaRepository<FulfillmentOrder, UUID> {
-    Optional<FulfillmentOrder> findById(UUID orderId);
-    boolean existsById(UUID orderId);
-    FulfillmentOrder save(FulfillmentOrder order);
 }

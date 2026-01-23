@@ -1,5 +1,0 @@
-spring:
-  application:
-    name: order-fulfillment-service
-server:
-  port: 0

@@ -1,43 +1,37 @@
 package com.marketplace.payment.application;
 
-import com.marketplace.payment.domain.model.PaymentIntent;
+import com.marketplace.payment.domain.model.PaymentOrder;
 import com.marketplace.payment.domain.repository.PaymentRepository;
+import com.marketplace.payment.infrastructure.rest.FulfillmentClient;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
 @Service
 public class PaymentApplicationService {
+
     private final PaymentRepository repository;
+    private final FulfillmentClient fulfillmentClient;
 
-    public PaymentApplicationService(PaymentRepository repository) {
+    public PaymentApplicationService(
+            PaymentRepository repository,
+            FulfillmentClient fulfillmentClient) {
         this.repository = repository;
+        this.fulfillmentClient = fulfillmentClient;
     }
 
-    // Order Management -> Payment
-    public PaymentIntent createPayment(UUID orderId) {
-        repository.findByOrderId(orderId).ifPresent(p -> {
-            throw new IllegalStateException("Payment already exists");
-        });
+    public void pay(UUID orderId) {
+        if (repository.existsById(orderId)) {
+            throw new IllegalStateException("Already paid");
+        }
 
-        PaymentIntent payment = new PaymentIntent(orderId);
-        return repository.save(payment);
-    }
+        PaymentOrder order = new PaymentOrder(orderId);
 
-    // Internal Simulation / Gateway callback
-    public void markPaymentSucceeded(UUID orderId) {
-        PaymentIntent payment = repository.findByOrderId(orderId)
-                .orElseThrow(() -> new IllegalStateException("Payment not found"));
+        // giả lập thanh toán thành công
+        order.markPaid();
+        repository.save(order);
 
-        payment.markSucceeded();
-        repository.save(payment);
-    }
-
-    public void markPaymentFailed(UUID orderId) {
-        PaymentIntent payment = repository.findByOrderId(orderId)
-                .orElseThrow(() -> new IllegalStateException("Payment not found"));
-
-        payment.markFailed();
-        repository.save(payment);
+        // notify fulfillment
+        fulfillmentClient.notifyPaid(orderId);
     }
 }
